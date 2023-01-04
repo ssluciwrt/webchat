@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register Here</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            font: 14px "Microsoft YaHei"
+        }
+        main {
+            /* border: 1px dotted #fab; */
+            margin-top: 200px;
+        }
+        .regform {
+            width: 400px;
+            /* border: 1px dotted #abf; */
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+        }
+        .errmsg {
+            width: 400px;
+            margin: 0 auto;
+            color: #b80303;
+        }
+
+        .inputs {
+            height: 30px;
+            padding: 3px 3px 3px 5px;
+            outline: none;
+            flex-grow: 1;
+        }
+        #sibtn {
+            box-sizing: content-box;
+            flex-grow: 0.5;
+            font-size: 13px;
+            color: #fff;
+            box-shadow: none;
+            outline: none;
+            border-radius: 3px;
+            background-color: #174264;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <form action="{{url_for('gohome')}}" method="POST" class="regform">
+            <input type="text" name="chatter" id="namebox" class="inputs" placeholder="ChatterName">
+            <input type="submit" value="回屋聊会儿" id="sibtn" class="inputs">
+        </form>
+        <div class="errmsg"><span>{{get_flashed_messages().0}}</span></div>
+    </main>
+</body>
+</html>

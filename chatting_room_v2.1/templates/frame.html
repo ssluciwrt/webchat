@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Frame</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            font: 14px monospace, Arial, Helvetica, sans-serif;
+        }
+        main {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap-reverse;
+        }
+        .sidecol {
+            /* border: 1px dotted #baf; */
+            flex-grow: 0;
+        }
+        .chatcol {
+            flex-grow: 1;
+        }
+
+        .showcase {
+            height: 560px;
+            padding: 10px;
+            border: 1px solid #464646;
+            margin: 0 5px;
+            overflow: auto;
+        }
+
+        .msgentry {
+            /* border: 1px dotted #abf; */
+            margin: 5px 0px;
+            display: flex;
+            align-items: center;
+            color: #ececec;
+        }
+
+        .rmsgentry {
+            /* border: 1px dotted #abf; */
+            margin: 5px 0px;
+            display: flex;
+            align-items: center;
+            flex-direction: row-reverse;
+            color: #ececec;
+        }
+
+        .idfix {
+            flex-shrink: 0;
+        }
+
+        .msguserid {
+            background-color: #a0298c;
+            width: 19px;
+            height: 19px;
+            text-align: center;
+            line-height: 19px;
+            padding: 5px;
+            border-radius: 100%;
+            font-size: 11px;
+        }
+        .rmsguserid {
+            background-color: #a02947;
+            width: 19px;
+            height: 19px;
+            text-align: center;
+            line-height: 19px;
+            padding: 5px;
+            border-radius: 100%;
+            font-size: 11px;
+        }
+
+        .msgtri {
+            border: 6px solid #0a7da0;
+            border-top-color: #00000000;
+            border-bottom-color: #00000000;
+            border-left-color: #00000000;
+        }
+
+        .rmsgtri {
+            border: 6px solid #0aa073;
+            border-top-color: #00000000;
+            border-bottom-color: #00000000;
+            border-right-color: #00000000;
+        }
+
+        .msgcontent {
+            padding: 5px;
+            background-color: #0a7da0;
+            border-radius: 3px;
+            box-shadow: 1px 1px 2px #000000be;
+        }
+
+        .rmsgcontent {
+            padding: 5px;
+            background-color: #0aa073;
+            border-radius: 3px;
+            box-shadow: -1px 1px 2px #000000be;
+        }
+
+        .msgbox {
+            border: 1px dotted #fab;
+            margin: 0 5px;
+            display: flex;
+        }
+
+        .msgbox textarea, .msgbox input {
+            outline: none;
+        }
+
+        #txmsgbox {
+            flex-grow: 6;
+            height: 65px;
+            padding: 5px;
+        }
+        .btns {
+            border: 1px dotted #abf;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .btn {
+            flex-grow: 2;
+        }
+        #txbtn {
+            flex-grow: 3;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <section class="sidecol"></section>
+        <section class="chatcol">
+            <div class="showcase" id="showcase"></div>
+            <div class="msgbox">
+                <textarea name="txmsgbox" id="txmsgbox"></textarea>
+                <div class="btns">
+                    <button id="clrbtn" class="btn">清空输入</button>
+                    <button id="txbtn" class="btn">发送消息</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script type="text/javascript">
+        const clrbtn = document.getElementById("clrbtn");
+        const txmsgbox = document.getElementById("txmsgbox");
+        const txbtn = document.getElementById("txbtn");
+        const showcase = document.getElementById("showcase");
+
+        const userid = "{{userid}}";
+        
+        function clrmsgbox() {
+            if(txmsgbox.value) {
+                txmsgbox.value = "";
+            }
+        }
+
+        clrbtn.addEventListener("click", clrmsgbox);
+
+        function sendmsg() {
+            if(txmsgbox.value) {
+                const xhr = new XMLHttpRequest();
+                xhr.open("POST", "/pubmsg")
+                xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                xhr.send(`userid=${userid}&content=${txmsgbox.value}`);
+                xhr.addEventListener("readystatechange", () => {
+                    if(xhr.readyState == 4 && xhr.status >= 200 && xhr.status < 300) {
+                        if(xhr.response != "pubbed") {
+                            alert("发送失败, 请稍候再试!");
+                        } else {
+                            txmsgbox.value = "";
+                        }
+                    }
+                })
+            }
+        }
+
+        txbtn.addEventListener("click", sendmsg);
+        document.addEventListener("keydown", (e) => {
+            if(e.key == "Enter") {
+                sendmsg();
+            }
+        });
+
+        function receivemsg() {
+            const xhr = new XMLHttpRequest();
+            xhr.open("POST", "/submsg");
+            xhr.send();
+            xhr.addEventListener("readystatechange", () => {
+                if(xhr.readyState == 4 && xhr.status >= 200 && xhr.status < 300) {
+                    const msg = JSON.parse(xhr.response);
+                    
+                    const msgentry = document.createElement("div");
+                    const msguserid = document.createElement("span");
+                    const msgtri = document.createElement("span");
+                    const msgcontent = document.createElement("span");
+
+                    if(userid == msg.userid) {
+                        msgentry.className = "rmsgentry";
+                        msgtri.className = "rmsgtri";
+                        msguserid.className = "rmsguserid";
+                        msgcontent.className = "rmsgcontent";
+                    } else {
+                        msgentry.className = "msgentry";
+                        msgtri.className = "msgtri";
+                        msguserid.className = "msguserid";
+                        msgcontent.className = "msgcontent";
+                    }
+                    msguserid.className += " idfix";
+
+
+                    msguserid.innerText = msg.userid;
+                    msgcontent.innerText = msg.content;
+                    msgentry.appendChild(msguserid);
+                    msgentry.appendChild(msgtri);
+                    msgentry.appendChild(msgcontent);
+                    showcase.appendChild(msgentry);
+                    showcase.scrollTop = showcase.scrollHeight - showcase.clientHeight;
+
+                    receivemsg();
+                }
+            })
+        }
+
+        receivemsg();
+
+
+    </script>
+</body>
+</html>

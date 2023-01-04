@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frame</title>
+    <style>
+        .msgshowcase {
+            height: 400px;
+            border: 1px solid #4e4e4e;
+            overflow: scroll;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <div class="msgshowcase" id="showcase"></div>
+        <div class="msgbox">
+            <textarea name="msg" id="txbox" cols="60" rows="5"></textarea>
+            <button type="submit" id="txbtn">发送</button>
+        </div>
+    </main>
+
+    <script type="text/javascript">
+        const txbtn = document.getElementById("txbtn");
+        const txbox = document.getElementById("txbox");
+
+        const userid = "{{userid}}";
+
+        txbtn.addEventListener("click", function() {
+            msgcontent = txbox.value;
+            if(msgcontent) {
+                data = `userid=${userid}&msgcontent=${msgcontent}`;
+                const xhr = new XMLHttpRequest();
+                xhr.open("POST", "/txqueue")
+                xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                xhr.send(data);
+                xhr.addEventListener("readystatechange", function() {
+                    if(xhr.readyState == 4 && xhr.status >= 200 && xhr.status < 300) {
+                        if(xhr.response != "Okay") {
+                            alert("发送失败, 请稍候再试!");
+                        }
+                    }
+                })
+            }
+        })
+
+        let index = 0;
+        setInterval(() => {
+            const xhr = new XMLHttpRequest();
+            xhr.open("POST", "/rcvqueue");
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            xhr.send(`index=${index}`)
+
+            xhr.addEventListener("readystatechange", () => {
+                if(xhr.readyState == 4 && xhr.status >= 200 && xhr.status < 300) {
+                    data = JSON.parse(xhr.response);
+                    index = data.index;
+                    msgs = data.msgpack;
+                    if(msgs.length) {
+                        const showcase = document.getElementById("showcase");
+                        for(let i = 0; i < msgs.length; i++) {
+                            msg = msgs[i];
+                            msgblock = document.createElement("div");
+                            msguid = document.createElement("span");
+                            msgcont = document.createElement("span");
+                            msguid.innerText = msg.userid;
+                            msgcont.innerText = msg.msgcontent;
+                            msgblock.append(msguid, msgcont);
+                            showcase.append(msgblock);
+                        }
+                    }
+                }
+            })
+        }, 500);
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frame</title>
+    <style>
+        * {
+            font-size: 14px;
+            font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+        .msgshowcase {
+            height: 500px;
+            border: 1px solid #070707;
+            overflow: auto;
+        }
+
+        .txbox {
+            display: flex;
+            flex-direction: row;
+            justify-content: right;
+        }
+
+        .btns {
+            display: flex;
+            flex-direction: row;
+            /* margin: 10px auto; */
+        }
+
+        #msgbox {
+            height: 50px;
+            width: 100%;
+            display: block;
+        }
+
+        .useridmsg {
+            background-color: #9e3030;
+            color: #fff5f5;
+            padding: 5px;
+            border-radius: 100%;
+            margin-left: 10px;
+        }
+
+        .ruseridmsg {
+            margin-right: 10px;
+            margin-left: 0px;
+        }
+
+        .msgcont {
+            max-width: 300px;
+            background-color: #0d4a6d;
+            color: #fff5f5;
+            margin: 3px 10px;
+            padding: 3px 10px;
+            display: inline-block;
+            border-radius: 20px 3px 3px 20px;
+        }
+
+        .rmsgcont {
+            border-radius: 3px 20px 20px 3px;
+        }
+
+        .rmsgrecord {
+            display: flex;
+            flex-direction: row-reverse;
+            align-items: center;
+        }
+
+    </style>
+</head>
+<body>
+    <main>
+        <div class="msgshowcase" id="showcase"></div>
+        <div class="txbox">
+            <textarea name="msgbox" id="msgbox"></textarea>
+            <div class="btns">
+                <button id="clrbtn">清空</button>
+                <button type="submit" id="txbtn">发送</button>
+            </div>
+        </div>
+    </main>
+
+    <script type="text/javascript">
+        const txbtn = document.getElementById("txbtn");
+        const clrbtn = document.getElementById("clrbtn");
+        const msgbox = document.getElementById("msgbox");
+        const showcase = document.getElementById("showcase");
+
+        clrbtn.addEventListener("click", () => {
+            if(msgbox.value) {
+                msgbox.value = "";
+            }
+        })
+
+        const userid = "{{userid}}";
+        txbtn.addEventListener("click", () => {
+            if(msgbox.value) {
+                data = `userid=${userid}&msgcontent=${msgbox.value}`;
+                const xhr = new XMLHttpRequest();
+                xhr.open("POST", "/txqueue");
+                xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                xhr.send(data);
+                xhr.addEventListener("readystatechange", () => {
+                    if(xhr.readyState == 4 && xhr.status >= 200 && xhr.status < 300) {
+                        if(xhr.response != "Qed") {
+                            alert("消息发送失败, 请稍候再试");
+                        }
+                        msgbox.value = "";
+                    }
+                })
+            }
+        })
+
+        document.addEventListener("keydown", (e) => {
+            if(e.key == "Enter") {
+                if(msgbox.value) {
+                    data = `userid=${userid}&msgcontent=${msgbox.value}`;
+                    const xhr = new XMLHttpRequest();
+                    xhr.open("POST", "/txqueue");
+                    xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                    xhr.send(data);
+                    xhr.addEventListener("readystatechange", () => {
+                        if(xhr.readyState == 4 && xhr.status >= 200 && xhr.status < 300) {
+                            if(xhr.response != "Qed") {
+                                alert("消息发送失败, 请稍候再试");
+                            }
+                            msgbox.value = "";
+                        }
+                    })
+                }
+            }
+        })
+
+        function poll() {
+            const xhr = new XMLHttpRequest();
+            xhr.open("POST", "/rcvqueue");
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            xhr.send(`userid=${userid}`);
+            xhr.addEventListener("readystatechange", () => {
+                if(xhr.readyState == 4 && xhr.status >= 200 && xhr.status < 300) {
+                    data = JSON.parse(xhr.response);
+                    console.log(data);
+                    const msgrecord = document.createElement("div");
+                    const useridmsg = document.createElement("span");
+                    const msgcont = document.createElement("span");
+                    useridmsg.innerText = data.userid;
+                    msgcont.innerText = data.msgcontent;
+                    useridmsg.className = "useridmsg";
+                    msgcont.className = "msgcont";
+                    msgrecord.appendChild(useridmsg);
+                    if(data.userid == userid) {
+                        useridmsg.className += " ruseridmsg"
+                        msgcont.className += " rmsgcont";
+                        msgrecord.className = "rmsgrecord";
+                    } 
+                    msgrecord.appendChild(msgcont);
+                    showcase.appendChild(msgrecord);
+                    poll();
+                }
+            })
+        }
+
+        poll();
+    </script>
+</body>
+</html>

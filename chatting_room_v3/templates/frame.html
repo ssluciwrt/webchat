@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Frame</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            font: 13px 'Microsoft YaHei', 'Arial Narrow', Arial, sans-serif;
+        }
+        main {
+            border: 1px dotted #fab;
+            display: flex;
+            flex-wrap: wrap-reverse;
+        }
+        .sec {
+            border: 1px dotted #abf;
+            flex-basis: 400px;
+            flex-grow: 1;
+            flex-shrink: 0;
+        }
+        .chatsec {
+            flex-grow: 10;
+            flex-shrink: 1;
+        }
+        .showcase {
+            border: 1px solid #000;
+            height: 550px;
+            overflow: auto;
+            background-color: #ebebeb;
+        }
+
+        .notify {
+            width: 100px;
+            text-align: center;
+            color: #f3f3f3;
+            padding: 1px;
+            border-radius: 50px;
+            margin: 5px auto;
+            background-color: #f36565;
+            box-shadow: 0px 1px 1px #000000ef;
+        
+        }
+        .noticont {
+            font-size: 12px;
+        }
+
+        .msgentry {
+            display: flex;
+            align-items: center;
+            margin: 10px 5px;
+        }
+        .msguserid {
+            width: 25px;
+            height: 25px;
+            font-size: 16px;
+            text-align: center;
+            line-height: 25px;
+            color: #fff;
+            padding: 5px;
+            border-radius: 2px;
+            background-color: #b80d0d;
+            flex-shrink: 0;
+        }
+        .msgtria {
+            border: 5px solid #cecece;
+            border-top-color: #00000000;
+            border-left-color: #00000000;
+            border-bottom-color: #00000000;
+        }
+        .msgcont {
+            padding: 10px;
+            color: #161616;
+            border-radius: 3px;
+            background-color: #f0f0f0;
+            box-shadow: 1px 1px 2px #000000ef;
+        }
+
+        .rmsgentry {
+            display: flex;
+            flex-direction: row-reverse;
+            align-items: center;
+            margin: 10px 5px;
+        }
+        .rmsguserid {
+            width: 25px;
+            height: 25px;
+            font-size: 16px;
+            text-align: center;
+            line-height: 25px;
+            color: #fff;
+            padding: 5px;
+            border-radius: 2px;
+            background-color: #0967a7;
+            flex-shrink: 0;
+        }
+        .rmsgtria {
+            border: 5px solid #39ce45;
+            border-top-color: #00000000;
+            border-right-color: #00000000;
+            border-bottom-color: #00000000;
+        }
+        .rmsgcont {
+            padding: 10px;
+            color: #161616;
+            border-radius: 3px;
+            background-color: #39ce45;
+            box-shadow: -1px 1px 2px #000000ef;
+        }
+
+        .msgbox {
+            border: 1px dotted #fba;
+            display: flex;
+        }
+        #txbox {
+            flex-grow: 6;
+            height: 50px;
+            padding: 5px;
+        }
+        .btns {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .msgbtn {
+            flex-grow: 1;
+        }
+        #txbtn {
+            flex-grow: 2;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <section class="sec sidesec"></section>
+        <section class="sec chatsec">
+            <div class="showcase" id="showcase"></div>
+            <div class="msgbox">
+                <textarea name="msgtxbox" id="txbox"></textarea>
+                <div class="btns">
+                    <button id="clrbtn" class="msgbtn">清空输入</button>
+                    <button id="txbtn" class="msgbtn">发送消息</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <!-- <script src="{{url_for('static', filename='socket.io.min.js')}}"></script> -->
+    <script>
+        const userid = "{{userid}}";
+        const wsocket = io("http://127.0.0.1:5000/", {
+            auth: {userid: userid}
+        });
+
+        const txbox = document.getElementById("txbox");
+        const clrbtn = document.getElementById("clrbtn");
+        const txbtn = document.getElementById("txbtn");
+        const showcase = document.getElementById("showcase");
+
+        clrbtn.addEventListener("click", () => {
+            if(txbox.value) {
+                txbox.value = "";
+            }
+        })
+
+        function pubmsg() {
+            if(txbox.value) {
+                msg = {msgtype: "message", userid: userid, content: txbox.value};
+                wsocket.emit("message", msg, (response) => {
+                    if(response != "emitted") {
+                        alert("发送失败, 请稍候再试!");
+                    } else {
+                        txbox.value = "";
+                    }
+                });
+            }
+        }
+
+        txbtn.addEventListener("click", () => {
+            pubmsg();
+        })
+
+        document.addEventListener("keydown", (e) => {
+            if(e.key == "Enter") {
+                pubmsg();
+            }
+        })
+
+        wsocket.on("message", (msg) => {
+            if(msg.msgtype == "notify") {
+                const noticont = document.createElement("span");
+                const notify = document.createElement("div");
+                noticont.innerText = msg.content;
+                console.log(noticont);
+                notify.appendChild(noticont);
+                noticont.className = "noticont";
+                notify.className = "notify";
+                showcase.appendChild(notify);
+            } else {
+                const msgentry = document.createElement("div");
+                const msguserid = document.createElement("span");
+                const msgtria = document.createElement("span");
+                const msgcont = document.createElement("span");
+                msguserid.innerText = msg.userid;
+                msgcont.innerText = msg.content;
+                msgentry.appendChild(msguserid);
+                msgentry.appendChild(msgtria);
+                msgentry.appendChild(msgcont);
+                showcase.appendChild(msgentry);
+                if(userid == msg.userid) {
+                    msgentry.className = "rmsgentry";
+                    msguserid.className = "rmsguserid";
+                    msgtria.className = "rmsgtria";
+                    msgcont.className = "rmsgcont";
+                } else {
+                    msgentry.className = "msgentry";
+                    msguserid.className = "msguserid";
+                    msgtria.className = "msgtria";
+                    msgcont.className = "msgcont";
+                }
+            }
+            showcase.scrollTop = showcase.scrollHeight - showcase.clientHeight;
+        })
+
+        
+    </script>
+</body>
+</html>

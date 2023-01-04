@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatting Frame</title>
+    <link href="{{url_for('static', filename='fontawesome/css/fontawesome.css')}}" rel="stylesheet">
+    <link href="{{url_for('static', filename='fontawesome/css/all.css')}}" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            font: 14px Microsoft YaHei;
+        }
+        main {
+            /* border: 1px dotted #abf; */
+            display: flex;
+            flex-wrap: wrap-reverse;
+        }
+        .sec {
+            /* border: 1px dotted #fab; */
+            flex-basis: 200px;
+        }
+        .sidesec {
+            margin-right: 5px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+        #sobtn {
+            margin: 5px;
+            display: flex;
+            justify-content: center;
+        }
+        #sobtn a {
+            font-size: 13px;
+            text-decoration: none;
+            color: #fff;
+            padding: 10px;
+            border-radius: 3px;
+            /* border: 1px dotted #cab; */
+            background-color: #174264;
+            transition: background-color 0.5s;
+        }
+        #sobtn a:hover {
+            background-color: #03213a;
+        }
+        #sobtn a i {
+            margin-left: 10px;
+        }
+        #my_statusbox, #statusbox, #rollnoitfy {
+            display: flex;
+            flex-direction: column;
+        }
+        #my_statusbox {
+            flex-basis: 90px;
+            flex-shrink: 0;
+        }
+        #statusbox {
+            flex-grow: 3;
+        }
+        .user_status {
+            border-top: 1px solid #fff;
+            border-radius: 5px;
+            background-color: #0766b4;
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        /* .user_status:hover {
+            background-color: #064d88;
+            cursor: pointer;
+        } */
+        .username {
+            font-size: 15px;
+            font-family: 'Courier New', Courier, monospace;
+            color: #000000;
+        }
+        .userstatus {
+            font-size: 11px;
+            color: #000000;
+        }
+        .fa-circle {
+            font-size: 6px;
+            margin: 6px;
+        }
+        .fa-circle-r {
+            color: #f00;
+            text-shadow: 0px 0px 5px #f006;
+        }
+        .fa-circle-g {
+            color: #0f0;
+            text-shadow: 0px 0px 5px #0f0;
+        }
+        .self_sign {
+            margin-left: 5px;
+            color: #14fa46;
+        }
+        #rollnoitfy {
+            height: 160px;
+            padding: 5px;
+            margin-top: 5px;
+            border-radius: 3px;
+            background-color: #7e7e7e99;
+            flex-grow: 0;
+        }
+        .notify {
+            margin: 0.5px auto 0.5px 20px;
+        }
+        .notify_time {
+            font-size: 11px;
+            text-shadow: 1px 1px 2px #000a;
+            margin-right: 10px;
+        }
+        .notify_content {
+            font-size: 13px;
+        }
+        .notify_content_g {
+            color: #014e01;
+        }
+        .notify_content_r {
+            color: #8a0101;
+        }
+        .msgsec {
+            padding: 0 5px 5px;
+            background-color: #777777;
+            flex-basis: 400px;
+            flex-grow: 1;
+        }
+        #tn_wrapper {
+            display: flex;
+            justify-content: center;
+            height: 25px;
+        }
+        #typing_notice {
+            font: 13px monospace;
+            line-height: 25px;
+            color: #fff;
+            text-shadow: 0.5px 0.5px 1px #000;
+        }
+        .showcase {
+            height: 550px;
+            padding: 10px;
+            border: 1px solid #646464;
+            border-radius: 5px 5px 0px 0px;
+            background-color: #fff;
+            overflow: auto;
+        }
+        #loadbox {
+            /* border: 1px dotted #fab; */
+            display: flex;
+            justify-content: center;
+        }
+        #loading {
+            width: 60px;
+        }
+        #nomorebox {
+            /* border: 1px dotted #abf; */
+            display: flex;
+            justify-content: center;
+        }
+        #nomoremsg {
+            font: 12px monospace;
+            color: #349fe7;
+            margin: 10px;
+        }
+        .rmsg_entry {
+            /* border: 1px dotted #abd; */
+            margin: 10px 5px;
+            display: flex;
+            flex-direction: row-reverse;
+            align-items: center;
+        }
+        .rmsg_user {
+            width: 45px;
+            height: 45px;
+            text-align: center;
+            line-height: 45px;
+            color: #ebebeb;
+            padding: 5px;
+            border-radius: 5px;
+            /* border: 1px dotted #fae; */
+            background-color: #01457c;
+            flex-shrink: 0;
+        }
+        .rmsg_pointer {
+            border: 5px solid #11992f;
+            border-top-color: #00000000;
+            border-right-color: #00000000;
+            border-bottom-color: #00000000;
+
+        }
+        .rmsg_cont {
+            color: #1d1d1d;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #11992f;
+            box-shadow: -1px 1px 3px #00000077;
+            flex-shrink: 1;
+        }
+        .msg_entry {
+            /* border: 1px dotted #dea; */
+            margin: 10px 5px;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+        }
+        .msg_user {
+            width: 45px;
+            height: 45px;
+            text-align: center;
+            line-height: 45px;
+            color: #ebebeb;
+            padding: 5px;
+            border-radius: 5px;
+            /* border: 1px dotted #fae; */
+            background-color: #a74005;
+            flex-shrink: 0;
+        }
+        .msg_pointer {
+            border: 5px solid #e4e4e4;
+            border-top-color: #00000000;
+            border-left-color: #00000000;
+            border-bottom-color: #00000000;
+
+        }
+        .msg_cont {
+            color: #1d1d1d;
+            padding: 10px;
+            border-radius: 5px;
+            /* border: 1px dotted #fce; */
+            background-color: #e4e4e4;
+            box-shadow: 1px 1px 3px #00000077;
+            flex-shrink: 1;
+        }
+
+        .msg_timestamp {
+            height: 10px;
+            text-align: center;
+            text-shadow: 1px 1px 1px #00000057;
+            line-height: 10px;
+            font-size: 10px;
+            color: #222222;
+            padding: 0px 5px;
+            flex-shrink: 0;
+        }
+
+        .msgbox {
+            display: flex;
+        }
+        .msgitem {
+            /* border: 1px dotted #baf; */
+            flex-grow: 6;
+        }
+        #txbox {
+            height: 50px;
+            padding: 5px;
+            outline: none;
+        }
+        .btns {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .btnitem {
+            flex-grow: 1;
+            box-sizing: content-box;
+            font-size: 13px;
+            color: #fff;
+            /* box-shadow: none;
+            outline: none; */
+            border-radius: 3px;
+            background-color: #174264;
+        }
+        #clrbtn {
+            background-color: #075718;
+        }
+        #txbtn {
+            flex-grow: 2;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <section class="sec sidesec" id="sidebar">
+            <div id="my_statusbox"></div>
+            <div id="sobtn">
+                <a href="{{url_for('goout')}}">回聊<i class="fa-solid fa-right-from-bracket"></i></a>
+            </div>
+            <div id="statusbox"></div>
+            <div id="rollnoitfy"></div>
+        </section>
+        <section class="sec msgsec">
+            <div id="tn_wrapper"><span id="typing_notice"></span></div>
+            <div class="showcase" id="showcase">
+                <div id="loadbox"><img id="loading" hidden src="{{url_for('static', filename='img/loading.gif')}}"></div>
+                <div id="nomorebox"><span id="nomoremsg" hidden>没有更多你们的聊天记录</span></div>
+            </div>
+            <div class="msgbox">
+                <textarea name="txbox" id="txbox" class="msgitem"></textarea>
+                <div class="btns msgitem">
+                    <button class="btnitem" id="clrbtn">清空输入</button>
+                    <button class="btnitem" id="txbtn">发送</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
+    <script type="text/javascript">
+        const iocli = io()
+
+        const sidebar = document.getElementById("sidebar");
+        const txbox = document.getElementById("txbox");
+        const clrbtn = document.getElementById("clrbtn");
+        const txbtn = document.getElementById("txbtn");
+        const rollnoitfy = document.getElementById("rollnoitfy");
+        const statusbox = document.getElementById("statusbox");
+        const my_statusbox = document.getElementById("my_statusbox");
+        const showcase = document.getElementById("showcase");
+        const typing_notice = document.getElementById("typing_notice");
+
+        window.addEventListener("resize", () => {
+            if(this.innerWidth <= 615) {
+                sidebar.style.flexBasis = "100%";
+            } else if(this.innerWidth > 630){
+                sidebar.style.flexBasis = "200px";
+            }
+        })
+
+        clrbtn.addEventListener("click", () => {
+            if(txbox.value) {
+                txbox.value = "";
+            }
+        })
+
+        iocli.on("status", (msg) => {
+            for(user in msg) {
+                if(rollnoitfy.childElementCount >= 8) {
+                    rollnoitfy.removeChild(rollnoitfy.firstElementChild);
+                }
+                const notify = document.createElement("div") ;
+                const notify_time = document.createElement("span");
+                const notify_content = document.createElement("span");
+                notify.className = "notify";
+                notify_time.className = "notify_time";
+                notify_content.className = "notify_content";
+                notify_time.innerText = `${(new Date()).getHours()}:${(new Date()).getMinutes()}`;
+                if(parseInt(msg[user])) {
+                    notify_content.innerText = `${user} 已到家`;
+                    notify_content.className += " notify_content_g";
+                } else {
+                    notify_content.innerText = `${user} 外出喽`;
+                    notify_content.className += " notify_content_r";
+                }
+                notify.appendChild(notify_time);
+		        notify.appendChild(notify_content);
+                rollnoitfy.appendChild(notify);
+
+                const pre_user_status = document.getElementById(user);
+                if(pre_user_status) {
+                    if(pre_user_status.online != msg[user]) {
+                        if(parseInt(msg[user])) {
+                            statusbox.removeChild(pre_user_status);
+                            pre_user_status.lastElementChild.innerText = "在家";
+                            pre_user_status.children[1].classList.replace("fa-circle-r", "fa-circle-g");
+                            pre_user_status.setAttribute("online", "1");
+                            statusbox.insertBefore(pre_user_status, statusbox.firstChild);
+                        } else {
+                            statusbox.removeChild(pre_user_status);
+                            pre_user_status.lastElementChild.innerText = "外出";
+                            pre_user_status.children[1].classList.replace("fa-circle-g", "fa-circle-r");
+                            pre_user_status.setAttribute("online", "0");
+                            statusbox.insertBefore(pre_user_status, statusbox.lastChild);
+                        }
+                    }
+                } else {
+                    const user_status = document.createElement("div");
+                    const username = document.createElement("span");
+                    const status_sign = document.createElement("i")
+                    const userstatus = document.createElement("span");
+                    user_status.className = "user_status";
+                    username.className = "username";
+                    status_sign.className = "fa-solid fa-circle";
+                    userstatus.className = "userstatus";
+                    user_status.appendChild(username);
+                    user_status.appendChild(status_sign);
+                    user_status.appendChild(userstatus);
+                    if(parseInt(msg[user])) {
+                        userstatus.innerText = "在家";
+                        user_status.setAttribute("online", "1")
+                        status_sign.className += " fa-circle-g";
+                    } else {
+                        userstatus.innerText = "外出";
+                        user_status.setAttribute("online", "0")
+                        status_sign.className += " fa-circle-r";
+                    }
+                    if(user == "{{chatter}}") {
+                        user_status.id = username.innerText = user;
+                        const self_sign = document.createElement("span");
+                        self_sign.innerText = "[ 我 ]";
+                        self_sign.className = "self_sign";
+                        user_status.insertBefore(self_sign, status_sign);
+                        my_statusbox.appendChild(user_status);
+                    } else {
+                        user_status.id = username.innerText = user;
+                        statusbox.appendChild(user_status);
+                    }
+                }
+            }
+        })
+
+        showcase.addEventListener("scroll", function () {
+            if(this.scrollTop == 0) {
+                const loading = document.getElementById("loading");
+                const nomoremsg = document.getElementById("nomoremsg");
+                loading.hidden = false;
+                nomoremsg.hidden = true;
+                iocli.emit("history");
+            }
+        })
+
+        iocli.on("history", (msg) => {
+            setTimeout(() => {
+                const loading = document.getElementById("loading");
+                loading.hidden = true;                
+                if(!msg) {
+                    const nomoremsg = document.getElementById("nomoremsg");
+                    nomoremsg.hidden = false;
+                } else {
+                    const msg_entry = document.createElement("div");
+                    const msg_user = document.createElement("span");
+                    const msg_pointer = document.createElement("span");
+                    const msg_cont = document.createElement("span");
+                    const msg_timestamp = document.createElement("span")
+                    if(msg.user == "{{chatter}}") {
+                        msg_entry.className = "rmsg_entry";
+                        msg_user.className = "rmsg_user";
+                        msg_pointer.className = "rmsg_pointer";
+                        msg_cont.className = "rmsg_cont";
+                    } else {
+                        msg_entry.className = "msg_entry";
+                        msg_user.className = "msg_user";
+                        msg_pointer.className = "msg_pointer";
+                        msg_cont.className = "msg_cont";
+                    }
+                    msg_timestamp.className = "msg_timestamp";
+    
+                    msg_user.innerText = msg.user;
+                    msg_cont.innerText = msg.content;
+                    const ts = parseInt(msg.time * 1000);
+                    const datecontainer = new Date(ts);
+                    const msg_time = {
+                        year: datecontainer.getFullYear(),
+                        month: datecontainer.getMonth(),
+                        day: datecontainer.getDate(),
+                        hour: datecontainer.getHours(),
+                        minute: datecontainer.getMinutes()
+                    }
+                    msg_timestamp.innerText = `${msg_time.year}/${msg_time.month + 1}/${msg_time.day} ${msg_time.hour}:${msg_time.minute}`;
+                    msg_entry.appendChild(msg_user);
+                    msg_entry.appendChild(msg_pointer);
+                    msg_entry.appendChild(msg_cont);
+                    msg_entry.appendChild(msg_timestamp);
+                    showcase.insertBefore(msg_entry, showcase.children[2]);
+                }
+            }, 500);
+        })
+
+        txbtn.addEventListener("click", sendmsg);
+        document.addEventListener("keydown", (e) => {
+            if(e.key == "Enter") {
+                sendmsg();
+            }
+        })
+
+        iocli.on("message", (msg) => {
+                const msg_entry = document.createElement("div");
+                const msg_user = document.createElement("span");
+                const msg_pointer = document.createElement("span");
+                const msg_cont = document.createElement("span");
+                const msg_timestamp = document.createElement("span");
+
+                if(msg.user == "{{chatter}}") {
+                    msg_entry.className = "rmsg_entry";
+                    msg_user.className = "rmsg_user";
+                    msg_pointer.className = "rmsg_pointer";
+                    msg_cont.className = "rmsg_cont";
+                } else {
+                    msg_entry.className = "msg_entry";
+                    msg_user.className = "msg_user";
+                    msg_pointer.className = "msg_pointer";
+                    msg_cont.className = "msg_cont";
+                }
+                msg_timestamp.className = "msg_timestamp";
+
+                msg_user.innerText = msg.user;
+                msg_cont.innerText = msg.content;
+                const ts = parseInt(msg.time * 1000);
+                const datecontainer = new Date(ts);
+                const msg_time = {
+                    year: datecontainer.getFullYear(),
+                    month: datecontainer.getMonth(),
+                    day: datecontainer.getDate(),
+                    hour: datecontainer.getHours(),
+                    minute: datecontainer.getMinutes()
+                }
+                msg_timestamp.innerText = `${msg_time.year}/${msg_time.month + 1}/${msg_time.day} ${msg_time.hour}:${msg_time.minute}`;
+                msg_entry.appendChild(msg_user);
+                msg_entry.appendChild(msg_pointer);
+                msg_entry.appendChild(msg_cont);
+                msg_entry.appendChild(msg_timestamp);
+                showcase.appendChild(msg_entry);
+                showcase.scrollTo(0, showcase.scrollHeight - showcase.clientHeight);
+        })
+
+        txbox.addEventListener("keydown", () => {
+            msg = {user: "{{chatter}}"}
+            iocli.emit("typing", msg);
+        })
+
+        iocli.on("typing", (msg) => {
+            if(!typing_notice.innerText) {
+                typing_notice.innerText = `${msg.user} 正准备说...`;
+            }
+            setTimeout(() => {
+                typing_notice.innerText = "";
+            }, 3000);
+        })
+
+        function sendmsg() {
+            if(txbox.value) {
+                msg = {user: "{{chatter}}", content: txbox.value};
+                iocli.emit("message", msg, (response) => {
+                    if(response != "sent") {
+                        alert("发送失败, 请稍候再试!");
+                    } else {
+                        txbox.value = "";
+                        const self_msg_entry = document.createElement("div");
+                        const self_msg_user = document.createElement("span");
+                        const self_msg_pointer = document.createElement("span");
+                        const self_msg_cont = document.createElement("span");
+                        const self_msg_timestamp = document.createElement("span");
+
+                        self_msg_entry.className = "rmsg_entry";
+                        self_msg_user.className = "rmsg_user";
+                        self_msg_pointer.className = "rmsg_pointer";
+                        self_msg_cont.className = "rmsg_cont";
+                        self_msg_timestamp.className = "msg_timestamp";
+
+                        const datecontainer = new Date();
+                        const msg_time = {
+                            year: datecontainer.getFullYear(),
+                            month: datecontainer.getMonth(),
+                            day: datecontainer.getDate(),
+                            hour: datecontainer.getHours(),
+                            minute: datecontainer.getMinutes()
+                        }
+
+                        self_msg_timestamp.innerText = `${msg_time.year}/${msg_time.month + 1}/${msg_time.day} ${msg_time.hour}:${msg_time.minute}`;
+                        self_msg_user.innerText = msg.user;
+                        self_msg_cont.innerText = msg.content;
+                        self_msg_entry.appendChild(self_msg_user);
+                        self_msg_entry.appendChild(self_msg_pointer);
+                        self_msg_entry.appendChild(self_msg_cont);
+                        self_msg_entry.appendChild(self_msg_timestamp);
+                        showcase.appendChild(self_msg_entry);
+                        showcase.scrollTo(0, showcase.scrollHeight - showcase.clientHeight);
+                    }
+                })
+            }
+        }
+
+    </script>
+</body>
+</html>
